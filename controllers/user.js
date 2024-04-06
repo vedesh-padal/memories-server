@@ -36,20 +36,11 @@ export const signup = async (req, res) => {
 
         if (password !== confirmPassword)   return res.status(400).json({ message: "Passwords don't match!" });
         
-
-        console.log('both passwords matched');
-
         const hashedPassword = await bcrypt.hash(password, 12); // 2nd parameter is the level of difficulty of the password (it is called `salt`)
-
-        console.log('password hashed')
 
         const result = await User.create({ email, password: hashedPassword, name: `${firstName} ${lastName}` });
 
-        console.log('user created');
-
         const token = jwt.sign({ email: result.email, id: result._id}, 'Ved@123', { expiresIn: '1h' });
-
-        console.log('jwt token generated');
 
         res.status(201).json({ result, token });
 

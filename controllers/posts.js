@@ -4,27 +4,18 @@ import mongoose from 'mongoose';
 export const getPosts = async (req, res) => {
     try {
         const postMessages = await PostMessage.find()
-
-        console.log(postMessages);
         res.status(200).json(postMessages);
     }   catch (error) {
         res.status(400).json({ message: error.message });
     }
-
 };
 
 export const createPost = async (req, res) => {
-    console.log('entered in createPost()');
     const post = req.body;
-    console.log(post);
     const newPost = new PostMessage({ ...post, creator: req.userId, createdAt: new Date().toISOString() })
-    console.log('newPost is created, but yet to save')
     try {
-        console.log('trying to save')
         await newPost.save();
-        console.log('saved!')
         res.status(201).json(newPost);
-        console.log('saved post is returned');
     }   catch (error)   {
         res.status(409).json({ message: error.message })
     }
@@ -56,8 +47,6 @@ export const deletePost = async (req, res) => {
 
 export const likePost = async (req, res) => {
     const { id } = req.params;
-
-    console.log(req.userId);
     
     if (!req.userId)    return res.json({ message: 'Unauthenticated' });
 
