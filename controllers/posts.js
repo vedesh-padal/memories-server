@@ -2,13 +2,49 @@ import PostMessage from '../models/postMessage.js'
 import mongoose from 'mongoose';
 
 export const getPosts = async (req, res) => {
+
+    const { page } = req.query;
+
     try {
-        const postMessages = await PostMessage.find()
-        res.status(200).json(postMessages);
+
+        const LIMIT = 8;
+        const startIndex = (Number(page) - 1) * LIMIT;  // get the starting index of every page
+        const total = await PostMessage.countDocuments({});
+
+        const posts = await PostMessage.find().sort({ _id: -1 }).limit(LIMIT).skip(startIndex);   // this will give the newest posts first
+        res.status(200).json({ data: posts, currentPage: Number(page), numberOfPages: Math.ceil(total / LIMIT) });
     }   catch (error) {
         res.status(400).json({ message: error.message });
     }
 };
+
+// NOTE: 
+// query ->  /posts?page=1  ->  page = 1        [ for querying data / search ]
+// params ->  /posts/:id  ->  id = id     ex:  /posts/123   ->   id = 123   [ for getting specific resource ]
+
+
+export const getPostsBySearch = async (req, res) => {
+    const { searchQuery, tags } = req.query;
+
+    try {
+        const title = new RegExp(searchQuery, 'i');     // 'i'  => ignoreCase
+
+        const posts = await PostMessage.find({
+          $or: [{ title }, 
+                { 
+                    tags: { 
+                        $in: tags.split(".") 
+                    } 
+                }
+            ],
+        });
+
+        res.json({ data: posts });
+
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+}
 
 export const createPost = async (req, res) => {
     const post = req.body;
