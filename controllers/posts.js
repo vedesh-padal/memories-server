@@ -22,6 +22,17 @@ export const getPosts = async (req, res) => {
 // query ->  /posts?page=1  ->  page = 1        [ for querying data / search ]
 // params ->  /posts/:id  ->  id = id     ex:  /posts/123   ->   id = 123   [ for getting specific resource ]
 
+export const getPost = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const post = await PostMessage.findById(id);
+
+        res.status(200).json(post);
+    }   catch (error)   {
+        res.status(404).json({ message: error.message });
+    }
+}
 
 export const getPostsBySearch = async (req, res) => {
     const { searchQuery, tags } = req.query;
@@ -33,7 +44,7 @@ export const getPostsBySearch = async (req, res) => {
           $or: [{ title }, 
                 { 
                     tags: { 
-                        $in: tags.split(".") 
+                        $in: tags.split(",") 
                     } 
                 }
             ],
